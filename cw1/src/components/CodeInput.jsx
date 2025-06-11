@@ -5,7 +5,7 @@ const CodeInput = ({ code, setCode, onSubmit, isLoading }) => {
     <div className="code-input-container">
       <textarea
         className="code-textarea"
-        rows={200}
+        rows={20}
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="Paste your code here..."

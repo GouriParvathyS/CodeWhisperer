@@ -1,11 +1,17 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const ExplanationOutput = ({ explanation, isLoading, error }) => {
-  if (error) return <div className="error-message">{error}</div>;
+  if (isLoading) return <div className="card">Loading...</div>;
+  if (error) return <div className="card error">{error}</div>;
+  if (!explanation) return null;
 
   return (
-    <div className="explanation-output">
-      {isLoading ? <p>Loading explanation...</p> : <pre>{explanation}</pre>}
+    <div className="card">
+      <div className="card-content">
+        <h2>🧠 Explanation</h2>
+        <ReactMarkdown>{explanation}</ReactMarkdown>
+      </div>
     </div>
   );
 };

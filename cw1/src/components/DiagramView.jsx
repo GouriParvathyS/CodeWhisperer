@@ -1,25 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 
-const DiagramView = ({ diagram, isLoading, error }) => {
-  useEffect(() => {
-    if (diagram && !isLoading && !error) {
-      mermaid.init(undefined, '#diagram-container');
-    }
-  }, [diagram, isLoading, error]);
+mermaid.initialize({ startOnLoad: false }); // initialize once with options
 
-  if (error) return null;
+const DiagramView = ({ diagram }) => {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.innerHTML = `<div class="mermaid">${diagram}</div>`;
+      try {
+        mermaid.init(undefined, ref.current); // force render
+      } catch (e) {
+        console.error("Mermaid render failed:", e);
+      }
+    }
+  }, [diagram]);
 
   return (
-    <div className="diagram-view">
-      {isLoading ? (
-        <p>Loading diagram...</p>
-      ) : (
-        <div className="mermaid" id="diagram-container">
-          {diagram}
-        </div>
-      )}
-    </div>
+    <div
+      ref={ref}
+      className="bg-white p-4 rounded-lg shadow overflow-auto"
+    />
   );
 };
 

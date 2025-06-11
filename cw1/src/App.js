@@ -89,34 +89,46 @@ ${/^[\s]*/.test(code) ? '✅ Proper indentation' : '⚠️ Check indentation'}`,
     };
   };
 
-  const handleSubmit = () => {
-    setIsLoading(true);
-    setError('');
-    setExplanation('');
-    setDiagram('');
+  const handleSubmit = async () => {
+  setIsLoading(true);
+  setError('');
+  setExplanation('');
+  setDiagram('');
 
-    try {
-      // Simulate API call delay
-      setTimeout(() => {
-        const response = generateMockResponse(code);
-        setExplanation(response.explanation);
-        setDiagram(response.diagram);
+  try {
+    const response = await fetch('http://localhost:5000/analyze', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code }), // Send code in request body
+    });
 
-        // Save to history with timestamp
-        const newEntry = {
-          id: Date.now(),
-          code,
-          timestamp: new Date().toLocaleString(),
-        };
-        setHistory(prev => [newEntry, ...prev]);
-
-        setIsLoading(false);
-      }, 1000);
-    } catch (err) {
-      setError('Failed to analyze code. Please try again.');
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.statusText}`);
     }
-  };
+
+    const data = await response.json();
+
+    // Assuming backend returns { explanation: "...", diagram: "..." }
+    setExplanation(data.explanation);
+    setDiagram(data.diagram);
+
+    // Save to history with timestamp
+    const newEntry = {
+      id: Date.now(),
+      code,
+      timestamp: new Date().toLocaleString(),
+    };
+    setHistory(prev => [newEntry, ...prev]);
+
+  } catch (err) {
+    setError(err.message || 'Failed to analyze code. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const loadSampleCode = () => {
     const samples = [
