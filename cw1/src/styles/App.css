@@ -1026,3 +1026,8 @@ body {
   box-shadow: none;
   transform: none;
 }
+/* App.css or styles.css */
+.mermaid-diagram svg {
+  width: 100%;
+  height: auto;
+}

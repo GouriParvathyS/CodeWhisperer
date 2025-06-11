@@ -1,27 +1,45 @@
+// DiagramView.jsx
 import React, { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 
-mermaid.initialize({ startOnLoad: false }); // initialize once with options
-
-const DiagramView = ({ diagram }) => {
-  const ref = useRef(null);
+const DiagramView = ({ diagram, isLoading, error }) => {
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    if (ref.current) {
-      ref.current.innerHTML = `<div class="mermaid">${diagram}</div>`;
+    if (diagram && containerRef.current) {
+      // Clear previous diagram content
+      containerRef.current.innerHTML = '';
+
+      // Insert Mermaid diagram block
+      const element = document.createElement('div');
+      element.className = 'mermaid';
+      element.innerHTML = diagram;
+      containerRef.current.appendChild(element);
+
+      // Initialize Mermaid (safe for React)
       try {
-        mermaid.init(undefined, ref.current); // force render
+        mermaid.initialize({ startOnLoad: false });
+        mermaid.init(undefined, element); // ← safer than render()
       } catch (e) {
-        console.error("Mermaid render failed:", e);
+        containerRef.current.innerHTML = `<p style="color:red">Failed to render diagram: ${e.message}</p>`;
       }
     }
   }, [diagram]);
 
+  if (isLoading) return <p>Loading diagram...</p>;
+  if (error) return null;
+  if (!diagram) return <p>No diagram to display yet.</p>;
+
   return (
-    <div
-      ref={ref}
-      className="bg-white p-4 rounded-lg shadow overflow-auto"
-    />
+    <div className="diagram-card card">
+      <div className="card-content">
+        <div className="card-header">
+          <h3 className="card-title">📊 Code Flow Diagram</h3>
+          <p className="card-subtitle">Visual representation of code logic</p>
+        </div>
+        <div ref={containerRef} />
+      </div>
+    </div>
   );
 };
 
