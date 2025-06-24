@@ -46,6 +46,17 @@ function sanitizeMermaidDiagram(diagram) {
             // Replace Python-specific syntax
             .replace(/len\([^)]+\)/g, 'length')
             .replace(/range\([^)]+\)/g, 'range')
+            // Replace Python-specific syntax
+.replace(/len\([^)]+\)/g, 'length')
+.replace(/range\([^)]+\)/g, 'range')
+// Handle common method calls intelligently
+.replace(/\.add\(([^)]+)\)/g, 'Add $1 to set')
+.replace(/\.remove\(([^)]+)\)/g, 'Remove $1 from set')
+.replace(/\.append\(([^)]+)\)/g, 'Append $1 to list')
+.replace(/\.get\(([^)]+)\)/g, 'Get $1 from dict')
+// Catch remaining unknown method calls
+.replace(/\.\w+\(\)/g, ' method')
+
             .replace(/\.\w+\(\)/g, ' method')
             // Replace common patterns
             .replace(/\w+\.\w+/g, 'property')
@@ -134,43 +145,48 @@ app.post('/analyze', async (req, res) => {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     // Updated prompt with stricter Mermaid guidelines
-    const prompt = `
+   const prompt = `
 You are an expert code analysis AI.
 
 Your task:
-1️⃣ Check the given code for any **syntax or logical errors**.
+1️⃣ Check the given code for any syntax or logical errors.
 2️⃣ If any error is found, first clearly mention: 
-    - The **error description** 
-    - **How to fix it** (give correction advice).
-3️⃣ After addressing errors, provide a **line-by-line explanation** of the entire code.
-4️⃣ Finally, generate a **simple Mermaid.js flowchart** following these STRICT rules:
-    - Start with: graph TD;
-    - Use ONLY simple letters for node IDs: A, B, C, D, E, etc.
-    - Use ONLY basic arrows: A --> B
-    - Keep node text EXTREMELY simple and generic:
-      * Use [Start] for beginning
-      * Use [Initialize vars] for variable setup
-      * Use [Check condition] for any if/while conditions  
-      * Use [Update left pointer] or [Update right pointer] for pointer movements
-      * Use [Calculate middle] for calculations
-      * Use [Move left] or [Move right] for array traversals
-      * Use [Increment counter] for counting operations
-      * Use [Return result] for return statements
-      * Use [End] for completion
-    - NO variable names, NO code syntax, NO operators in node text
-    - NO array indexing like nums[m] - just say "check element"
-    - NO mathematical expressions - just say "calculate" or "compare"
-    - Keep ALL node descriptions under 15 characters when possible
+    - The error description 
+    - How to fix it (give correction advice).
+3️⃣ After addressing errors, provide a line-by-line explanation of the entire code.
+4️⃣ Finally, generate a Mermaid.js flowchart following these STRICT rules:
 
-Example format:
+- Start with: graph TD;
+- Use one-letter node IDs: A, B, C, D, etc.
+- Use arrows: A --> B
+- Inside nodes:
+    - Show actual variable names and expressions from the code.
+    - BUT apply these replacements to ensure Mermaid syntax is valid:
+        - Replace < with "lt"
+        - Replace > with "gt"
+        - Replace == with "equals"
+        - Replace != with "not_equals"
+        - Replace = with "assign"
+        - Replace + with "plus"
+        - Replace - with "minus"
+        - Replace * with "times"
+        - Replace / with "divide"
+        - Replace % with "mod"
+        - Replace [ and ] with "(index)" — example: nums[m] becomes nums(index m)
+    - Do not include any Markdown formatting.
+    - Ensure valid Mermaid syntax that renders correctly.
+
+Example:
+
 graph TD;
-A[Start] --> B[Initialize];
-B --> C[Check condition];
-C --> D[Update left];
-C --> E[Update right];
-D --> C;
+A[Start] --> B[Initialize left, right];
+B --> C[Calculate m as (left plus right) divide 2];
+C --> D{nums(index m) gt nums(index right)};
+D -- Yes --> E[left assign m plus 1];
+D -- No --> F[right assign m];
 E --> C;
-C --> F[Return result];
+F --> C;
+C --> G[Return nums(index left)];
 
 Your response MUST be valid JSON format:
 
@@ -184,7 +200,9 @@ Your response MUST be valid JSON format:
 
 Code:
 ${code}
-    `;
+`;
+
+
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
