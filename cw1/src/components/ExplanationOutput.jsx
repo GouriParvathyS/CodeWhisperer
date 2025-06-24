@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ExplanationOutput = ({ explanation, isLoading, error }) => {
   if (isLoading) {
@@ -57,28 +59,32 @@ const ExplanationOutput = ({ explanation, isLoading, error }) => {
             </div>
           </div>
         </div>
-        <div
-  className="explanation-wrapper"
-  style={{
-    maxHeight: '500px',
-    overflowY: 'auto',
-    border: '1px solid #eee',
-    borderRadius: '8px',
-    padding: '10px',
-    background: '#f9fafb'
-  }}
->
-  <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
-    {Array.isArray(explanation)
-      ? explanation.map((item, idx) => (
-          <div key={idx}>
-            <strong>{item.line}:</strong> {item.explanation}
-          </div>
-        ))
-      : explanation}
-  </div>
-</div>
 
+        <div
+          className="explanation-wrapper"
+          style={{
+            maxHeight: '500px',
+            overflowY: 'auto',
+            border: '1px solid #eee',
+            borderRadius: '8px',
+            padding: '10px',
+            background: '#f9fafb',
+            fontFamily: 'system-ui',
+          }}
+        >
+          {Array.isArray(explanation) ? (
+            explanation.map((item, idx) => (
+              <div key={idx} style={{ marginBottom: '1rem' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '0.3rem' }}>{item.line}</div>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {item.explanation}
+                </ReactMarkdown>
+              </div>
+            ))
+          ) : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{explanation}</ReactMarkdown>
+          )}
+        </div>
       </div>
     </div>
   );

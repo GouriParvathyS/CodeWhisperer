@@ -9,13 +9,14 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.9.0",
     "lucide-react": "^0.513.0",
-    "mermaid": "^11.6.0",
+    "mermaid": "^11.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^10.1.0",
     "react-mermaid2": "^0.1.4",
     "react-router-dom": "^7.6.2",
     "react-scripts": "5.0.1",
+    "remark-gfm": "^4.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
